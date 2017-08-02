@@ -26,6 +26,7 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+    [self.testTable truncate];
 }
 
 - (void)testInsertSpecialCharRecord
@@ -36,6 +37,7 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertNULLTextRecord
@@ -46,6 +48,7 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertZeroRecord
@@ -56,6 +59,7 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertDoubleTypeRecord
@@ -66,6 +70,7 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertBlobTypeRecord
@@ -76,6 +81,7 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertImageDataTypeRecord
@@ -88,12 +94,13 @@
     NSError *error = nil;
     [self.testTable insertRecord:record error:&error];
     XCTAssertNil(error);
+    XCTAssertNotNil([self.testTable findWithPrimaryKey:record.primaryKey error:NULL]);
 }
 
 - (void)testInsertRecordList
 {
     NSInteger recordCount = 10;
-    NSMutableArray *recordList = [[NSMutableArray alloc] init];
+    NSMutableArray <TestRecord *> *recordList = [[NSMutableArray alloc] init];
     while (recordCount --> 0) {
         TestRecord *record = [[TestRecord alloc] init];
         record.age = @(recordCount);
@@ -103,40 +110,46 @@
     NSError *error = nil;
     [self.testTable insertRecordList:recordList error:&error];
     XCTAssertNil(error);
-}
 
-- (void)testInsert_100_Performance
-{
-    NSInteger recordCount = 100;
-    NSMutableArray *recordList = [[NSMutableArray alloc] init];
-    while (recordCount --> 0) {
-        TestRecord *record = [[TestRecord alloc] init];
-        record.age = @(recordCount);
-        [recordList addObject:record];
-    }
-
-    [self measureBlock:^{
-        NSError *error = nil;
-        [self.testTable insertRecordList:recordList error:&error];
+    NSMutableArray *primaryList = [[NSMutableArray alloc] init];
+    [recordList enumerateObjectsUsingBlock:^(TestRecord * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [primaryList addObject:obj.primaryKey];
     }];
+    XCTAssertEqual(recordList.count, [self.testTable findAllWithPrimaryKey:primaryList error:NULL].count);
 }
 
-- (void)testInsert_1_000_Performance
-{
-    NSInteger recordCount = 1000;
-    NSMutableArray *recordList = [[NSMutableArray alloc] init];
-    while (recordCount --> 0) {
-        TestRecord *record = [[TestRecord alloc] init];
-        record.age = @(recordCount);
-        [recordList addObject:record];
-    }
-
-    [self measureBlock:^{
-        NSError *error = nil;
-        [self.testTable insertRecordList:recordList error:&error];
-    }];
-}
-
+//- (void)testInsert_100_Performance
+//{
+//    NSInteger recordCount = 100;
+//    NSMutableArray <TestRecord *> *recordList = [[NSMutableArray alloc] init];
+//    while (recordCount --> 0) {
+//        TestRecord *record = [[TestRecord alloc] init];
+//        record.age = @(recordCount);
+//        [recordList addObject:record];
+//    }
+//
+//    [self measureBlock:^{
+//        NSError *error = nil;
+//        [self.testTable insertRecordList:recordList error:&error];
+//    }];
+//}
+//
+//- (void)testInsert_1_000_Performance
+//{
+//    NSInteger recordCount = 1000;
+//    NSMutableArray *recordList = [[NSMutableArray alloc] init];
+//    while (recordCount --> 0) {
+//        TestRecord *record = [[TestRecord alloc] init];
+//        record.age = @(recordCount);
+//        [recordList addObject:record];
+//    }
+//
+//    [self measureBlock:^{
+//        NSError *error = nil;
+//        [self.testTable insertRecordList:recordList error:&error];
+//    }];
+//}
+//
 //- (void)testInsert_10_000_Performance
 //{
 //    NSInteger recordCount = 10000;
